@@ -4,14 +4,63 @@ export default class App extends Component {
   constructor(){
     super()
     this.state={
-      resultText:""
+      resultText:"",
+      calctext:""
     }
+    this.operations=['DEL','+','-','*','/']
   }
   buttonpressed(text){
+    if (text == '='){
+      return this.validate() && this.calculateResult(this.state.resultText)
+    }
     this.setState({
       resultText:this.state.resultText+text
     })
               
+  }
+  validate(){
+    const text = this.state.resultText
+    switch(text.slice(-1)){
+      case '+':
+      case '-':
+      case '*':
+      case '/':
+        return false
+      default:
+        return true
+    }
+  }
+  operate(operation){
+    switch(operation){
+      case 'DEL':
+        if(this.state.resultText=='') return
+        let text = this.state.resultText.split('')
+        text.pop()
+        this.setState({
+          resultText:text.join('')
+        })
+        break
+      case '+':
+      case '-':
+      case '*':
+      case '/':
+        if(this.state.resultText=='')return
+        const lastchar=this.state.resultText.split('').pop()
+        if(this.operations.indexOf(lastchar)>0) return
+        this.setState({
+          resultText: this.state.resultText+operation
+        })
+    }
+  }
+  calculateResult(){
+    //BODMAS
+    const text=this.state.resultText
+    this.setState({
+      calctext:eval(text)
+    })
+
+    
+
   }
  
   render(){
@@ -20,14 +69,14 @@ export default class App extends Component {
     for(let i=0;i<4;i++){
       let row=[]
       for(let j=0;j<3;j++){
-        row.push(<TouchableOpacity onPress={() => this.buttonpressed(nums[i][j])} style={styles.btn}><Text style={styles.btntext}>{nums[i][j]}</Text></TouchableOpacity>)
+        row.push(<TouchableOpacity key={nums[i][j]}onPress={() => this.buttonpressed(nums[i][j])} style={styles.btn}><Text style={styles.btntext}>{nums[i][j]}</Text></TouchableOpacity>)
       }
-      rows.push(<View style={styles.row}>{row}</View>)
+      rows.push(<View  key={i} style={styles.row}>{row}</View>)
     }
-    let operations=['+','-','*','/']
+    
     let ops=[]
-    for(let i=0;i<4;i++){
-      ops.push(<TouchableOpacity onPress={() => this.buttonpressed(operations[i])} style={styles.btn}><Text style={styles.opstext}>{operations[i]}</Text></TouchableOpacity>)
+    for(let i=0;i<5;i++){
+      ops.push(<TouchableOpacity key={this.operations[i]} onPress={() => this.operate(this.operations[i])} style={styles.btn}><Text style={styles.opstext}>{this.operations[i]}</Text></TouchableOpacity>)
     }
   return (
     <View style={styles.container}>
@@ -35,7 +84,7 @@ export default class App extends Component {
         <Text style={styles.resultText}>{this.state.resultText}</Text>
       </View>
       <View style={styles.calculation}>
-        <Text style={styles.calctext}>121</Text>
+        <Text style={styles.calctext}>{this.state.calctext}</Text>
       </View>
       <View style={styles.buttons}>
          <View style={styles.numbers}>
@@ -77,7 +126,7 @@ const styles = StyleSheet.create({
     },
     operations:{
       backgroundColor:'#212F3C',
-      flex: 1
+      flex: 1,
     },
     row:{
         flexDirection:'row',
@@ -97,7 +146,7 @@ const styles = StyleSheet.create({
     },
     opstext:{
       color:'#AED6F1',
-      fontSize:30
+      fontSize:26
     },
     resultText:{
       color:'#5DADE2',
